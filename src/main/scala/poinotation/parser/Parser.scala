@@ -2,7 +2,7 @@ package poinotation.parser
 
 import poinotation.ir._
 import scala.language.postfixOps
-import scala.util
+import scala.util.parsing.combinator._
 
 /**
   * -----------
