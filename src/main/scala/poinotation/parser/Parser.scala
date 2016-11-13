@@ -11,11 +11,10 @@ import scala.util.parsing.combinator._
   * -------------
   *
   *       program ::= declarations name
-  *       declarations ::= dec declarations | dec
+  *       declarations ::= dec declarations  |  dec
   *       dec ::= name "=" move
   *
   *       name ::= sequence
-  *       sequence ::= "(" sequence "*" num ")" | move "~" sequence | move
   *
   *       // and everything else in the current grammar
   *
@@ -26,13 +25,13 @@ import scala.util.parsing.combinator._
   *       num ∈ 𝒵 (non-negative integer)
   *
   *       program ::= sequence
-  *       sequence ::= move "~" sequence | move
+  *       sequence ::= sequence "*" num  |  move "~" sequence  |  move
   *       move ::= "(" move  |  property "," move  |  property ")"  |  ")"
   *
-  *       property ::= spin  | dir | rotations | extended
+  *       property ::= spin | dir | rotations | extended
   *       spin ::= "inspin" | "antispin"
   *       dir ::= "cw" | "clockwise" | "ccw" | "counterclockwise" | "none"
-  *       rotations ::= num "-petal" | num "rotations"
+  *       rotations ::= num "-petal" | num "-rotation"
   *       extended ::= "extend" | "extended" | "no-extend"
   *
   */
@@ -46,6 +45,15 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
   def positiveInt: Parser[String] = """[1-9]\d*""".r
   def nonNegativeInt: Parser[String] = """\d+""".r
 
+  def duplicate(l: List[OnePoiMove], n: Int): List[OnePoiMove] = {
+    require(n >= 0)
+    if (n == 0)
+      List()
+    else {
+      l ++ duplicate(l, n-1)
+    }
+  }
+
   // parsing interface
   def apply(s: String): ParseResult[List[OnePoiMove]] = {
     println(s"THE PROGRAM IS: $s\n")
@@ -57,7 +65,8 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
 
   lazy val sequence: PackratParser[List[OnePoiMove]] =
     (
-      (move ~ "~" ~ sequence ^^ { case m ~ "~" ~ seq => m :: seq })
+      (sequence ~ "*" ~ nonNegativeInt ^^ { case seq ~ "*" ~ n => duplicate(seq, n.toInt) })
+      | (move ~ "~" ~ sequence ^^ { case m ~ "~" ~ seq => m :: seq })
       | (move ^^ { m => List(m) })
       | failure("expected a move or sequence of moves")
       )
@@ -100,8 +109,8 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
   lazy val rotations: PackratParser[String] =
     (
       (positiveInt <~ "-petal" ^^ { n => s"${n.toInt-1}"})
-      | (nonNegativeInt <~ "rotations")
-      | failure("""expected at least 1 "-petal" and 0 "rotations" as an integer""")
+      | (nonNegativeInt <~ "-rotation")
+      | failure("""expected at least 1 "-petal" and 0 "-rotation" as an integer""")
       )
 
   lazy val extended: PackratParser[String] =
