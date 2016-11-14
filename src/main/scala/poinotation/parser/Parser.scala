@@ -45,15 +45,6 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
   def positiveInt: Parser[String] = """[1-9]\d*""".r
   def nonNegativeInt: Parser[String] = """\d+""".r
 
-  def duplicate(l: List[OnePoiMove], n: Int): List[OnePoiMove] = {
-    require(n >= 0)
-    if (n == 0)
-      List()
-    else {
-      l ++ duplicate(l, n-1)
-    }
-  }
-
   // parsing interface
   def apply(s: String): ParseResult[List[OnePoiMove]] = {
     println(s"THE PROGRAM IS: $s\n")
@@ -65,7 +56,7 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
 
   lazy val sequence: PackratParser[List[OnePoiMove]] =
     (
-      (sequence ~ "*" ~ nonNegativeInt ^^ { case seq ~ "*" ~ n => duplicate(seq, n.toInt) })
+      (sequence ~ "*" ~ nonNegativeInt ^^ { case seq ~ "*" ~ n => List.fill(n.toInt)(seq).flatten })
       | (move ~ "~" ~ sequence ^^ { case m ~ "~" ~ seq => m :: seq })
       | (move ^^ { m => List(m) })
       | failure("expected a move or sequence of moves")

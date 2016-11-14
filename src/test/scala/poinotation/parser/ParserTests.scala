@@ -79,6 +79,7 @@ class ParserTests extends FunSuite with Matchers {
     for (i <- 1 to 5) {
       assert(s"() * $i" ~> List.fill(i)(defaultMove))
       assert(s"(extend) * $i" ~> List.fill(i)(OnePoiMove(extended = true)))
+      assert(s"(extend, $i-rotation) * $i" ~> List.fill(i)(OnePoiMove(extended = true, rotations = i)))
     }
   }
 
