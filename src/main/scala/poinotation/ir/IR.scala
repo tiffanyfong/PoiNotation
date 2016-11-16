@@ -5,7 +5,6 @@ package poinotation.ir
   */
 
 import poinotation.ir.Spin._
-import scala.language.implicitConversions
 
 sealed abstract class Move
 
@@ -18,14 +17,12 @@ case class OnePoiMove(extended: Boolean = false,   // false = arm is not extende
                       //TODO trace: String = "")   // shape of hand trajectory (i.e. circle, square, semicircle...)
   extends Move {
 
-  def addProperty(property: (String, String)): OnePoiMove = property match {
-    case ("spin", "antispin") => this.copy(handleSpin = opposite(this.armSpin))
-    case ("spin", "inspin") => this.copy(handleSpin = this.armSpin)
-    case ("dir", d) => this.copy(armSpin = d)
-    case ("rotations", r) => this.copy(rotations = r.toInt)
-    case ("extended", "true") => this.copy(extended = true)
-    case ("extended", "false") => this.copy(extended = false)
-    case _ => this // given property is unaccounted for
+  def addProperty(property: (String, String)) = property match {
+    case ("extended", bool) => this.copy(extended = bool.toBoolean)
+    case ("armSpin", spin) => this.copy(armSpin = spin)
+    case ("handleSpin", spin) => this.copy(handleSpin = spin)
+    case ("rotations", n) => this.copy(rotations = n.toInt)
+    case _ => this
   }
 }
 

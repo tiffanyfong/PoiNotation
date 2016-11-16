@@ -25,14 +25,21 @@ import scala.util.parsing.combinator._
   *       num ∈ 𝒵 (non-negative integer)
   *
   *       program ::= sequence
-  *       sequence ::= sequence "*" num  |  move "~" sequence  |  move
-  *       move ::= "(" move  |  property "," move  |  property ")"  |  ")"
+  *       sequence ::= sequence "~" duplicateMove  |  duplicateMove
+  *       duplicateMove ::= duplicateMove "*" num  |  move
+  *       move ::= "(" sequence ")" | "{" json
   *
-  *       property ::= spin | dir | rotations | extended
-  *       spin ::= "inspin" | "antispin"
-  *       dir ::= "cw" | "clockwise" | "ccw" | "counterclockwise" | "none"
-  *       rotations ::= num "-petal" | num "-rotation"
-  *       extended ::= "extend" | "extended" | "no-extend"
+  *       json ::= property "," json | property "}" | "}"
+  *
+  *       property ::=
+  *         "extended" ":" bool
+  *         |  ("arm" | "armSpin") ":" armSpin
+  *         |  ("handle" | "handleSpin") ":" handleSpin
+  *         |  "petals" ":" positiveInt
+  *         |  "rotations" ":" nonNegativeInt
+  *
+  *       REGEX
+  *       armSpin, bool, handleSpin, nonNegativeInt, positiveInt
   *
   */
 
@@ -44,6 +51,9 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
   // regex
   def positiveInt: Parser[String] = """[1-9]\d*""".r
   def nonNegativeInt: Parser[String] = """\d+""".r
+  def bool: Parser[String] = "(true)|(false)".r
+  def armSpin: Parser[String] = "(c?cw)|((counter)?clockwise)|(none)".r
+  def handleSpin: Parser[String] = armSpin | "(anti-?spin)|(in-?spin)".r
 
   // parsing interface
   def apply(s: String): ParseResult[List[OnePoiMove]] = {
@@ -56,57 +66,42 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
 
   lazy val sequence: PackratParser[List[OnePoiMove]] =
     (
-      (sequence ~ "*" ~ nonNegativeInt ^^ { case seq ~ "*" ~ n => List.fill(n.toInt)(seq).flatten })
-      | (move ~ "~" ~ sequence ^^ { case m ~ "~" ~ seq => m :: seq })
-      | (move ^^ { m => List(m) })
-      | failure("expected a move or sequence of moves")
+      (sequence ~ "~" ~ duplicateMove ^^ { case seq ~ "~" ~ dup => seq ++ dup })
+      | (duplicateMove ^^ {dup => dup})
+      | failure("expected a sequence of moves")
       )
 
-  lazy val move: PackratParser[OnePoiMove] =
+  lazy val duplicateMove: PackratParser[List[OnePoiMove]] =
     (
-      ("(" ~> move)
-      | (property ~ "," ~ move ^^ { case p ~ "," ~ m => m.addProperty(p) })
-      | (property <~ ")" ^^ { p => defaultMove.addProperty(p) })
-      | (")" ^^^ defaultMove)
-      | failure("expected properties separated by commas and enclosed with parentheses")
+      (duplicateMove ~ "*" ~ nonNegativeInt ^^ { case dup ~ "*" ~ n => List.fill(n.toInt)(dup).flatten})
+      | move
+      | failure("expected duplicate moves or a single move")
+      )
+
+  lazy val move: PackratParser[List[OnePoiMove]] =
+    (
+      ("(" ~> sequence <~ ")")
+      | ("{" ~ json ^^ { case "{" ~ o => List(o)})
+      | failure("expected json or a sequence in parantheses")
+      )
+
+  lazy val json: PackratParser[OnePoiMove] =
+    (
+      (property ~ "," ~ json ^^ { case p ~ "," ~ o => o.addProperty(p) })
+      | (property ~ "}" ^^ { case p ~ "}" => defaultMove.addProperty(p) })
+      | ("}" ^^^ defaultMove)
+      | failure("failed to parse json")
       )
 
   // key-value pair where the key corresponds to the property in the IR case class,
   // and the value is a string that will be converted into the correct type for the specific key
   lazy val property: PackratParser[(String, String)] =
     (
-      (spin ^^ { s => ("spin", s)})
-      | (dir ^^ { d => ("dir", d) })
-      | (rotations ^^ { r => ("rotations", r) })
-      | (extended ^^ { e => ("extended", e)})
+      ("extended" ~> ":" ~> bool ^^ { b => ("extended", b)})
+      | ("arm(Spin)?".r ~> ":" ~> armSpin ^^ {a => ("armSpin", a)})
+      | ("handle(Spin)?".r ~> ":" ~> handleSpin ^^ {h => ("handleSpin", h)})
+      | ("petals" ~> ":" ~> positiveInt ^^ {n => ("rotations", s"${n.toInt-1}")})
+      | ("rotations" ~> ":" ~> nonNegativeInt ^^ {n => ("rotations", n)})
       | failure("could not parse one of the properties: spin, direction, # of handle rotations, extended")
-      )
-
-  lazy val spin: PackratParser[String] =
-    (
-      "inspin"
-      | "antispin"
-      | failure("""expected "inspin" or "antispin" for relative spin""")
-      )
-
-  lazy val dir: PackratParser[String] =
-    (
-      (("cw" | "clockwise") ^^^ "CW")
-      | (("ccw" | "counterclockwise") ^^^ "CCW")
-      | ("none" ^^^ "NONE")
-      | failure("""expected "cw", "ccw", or "none" for direction of arm rotation""")
-      )
-
-  lazy val rotations: PackratParser[String] =
-    (
-      (positiveInt <~ "-petal" ^^ { n => s"${n.toInt-1}"})
-      | (nonNegativeInt <~ "-rotation")
-      | failure("""expected at least 1 "-petal" and 0 "-rotation" as an integer""")
-      )
-
-  lazy val extended: PackratParser[String] =
-    (
-      (("extended" | "extend") ^^^ "true")
-      | ("no-extend" ^^^ "false")
       )
 }
