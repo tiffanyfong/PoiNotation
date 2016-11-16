@@ -27,9 +27,9 @@ import scala.util.parsing.combinator._
   *       program ::= sequence
   *       sequence ::= sequence "~" duplicateMove  |  duplicateMove
   *       duplicateMove ::= duplicateMove "*" num  |  move
-  *       move ::= "(" sequence ")" | "{" json
+  *       move ::= "(" sequence ")"  |  json "}"
   *
-  *       json ::= property "," json | property "}" | "}"
+  *       json ::= json "," property  |  "{" property  |  "{"
   *
   *       property ::=
   *         "extended" ":" bool
@@ -67,7 +67,7 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
   lazy val sequence: PackratParser[List[OnePoiMove]] =
     (
       (sequence ~ "~" ~ duplicateMove ^^ { case seq ~ "~" ~ dup => seq ++ dup })
-      | (duplicateMove ^^ {dup => dup})
+      | duplicateMove
       | failure("expected a sequence of moves")
       )
 
@@ -81,15 +81,15 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
   lazy val move: PackratParser[List[OnePoiMove]] =
     (
       ("(" ~> sequence <~ ")")
-      | ("{" ~ json ^^ { case "{" ~ o => List(o)})
+      | (json <~ "}" ^^ { j => List(j)})
       | failure("expected json or a sequence in parantheses")
       )
 
   lazy val json: PackratParser[OnePoiMove] =
     (
-      (property ~ "," ~ json ^^ { case p ~ "," ~ o => o.addProperty(p) })
-      | (property ~ "}" ^^ { case p ~ "}" => defaultMove.addProperty(p) })
-      | ("}" ^^^ defaultMove)
+      (json ~ "," ~ property ^^ { case j ~ "," ~ p => j.addProperty(p) })
+      | ("{" ~> property ^^ { p => defaultMove.addProperty(p) })
+      | ("{" ^^^ defaultMove)
       | failure("failed to parse json")
       )
 
