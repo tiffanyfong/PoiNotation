@@ -24,6 +24,12 @@ case class OnePoiMove(extended: Boolean = false,   // false = arm is not extende
     case ("rotations", n) => this.copy(rotations = n.toInt)
     case _ => this
   }
+
+  // adjusts antispin rotations
+  def adjustAntispin(): OnePoiMove = this.handleSpin match {
+    case ANTISPIN => this.copy(rotations = this.rotations-1)
+    case _ => this
+  }
 }
 
 object OnePoiMove {

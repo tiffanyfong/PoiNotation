@@ -45,7 +45,7 @@ class ParserTests extends FunSuite with Matchers {
   }
 
   test("change all properties from default") {
-    assert("{extended: true, arm: ccw, handle: antispin, petals: 3}" ~> List(OnePoiMove(true, CCW, ANTISPIN, 2)))
+    assert("{extended: true, arm: ccw, petals: 3, handle: antispin}" ~> List(OnePoiMove(true, CCW, ANTISPIN, 2)))
 
     // order shouldn't matter
     assert("{handle: antispin, petals: 3, extended: true, arm: ccw}" ~> List(OnePoiMove(true, CCW, ANTISPIN, 2)))
@@ -56,34 +56,28 @@ class ParserTests extends FunSuite with Matchers {
     assert("{extended: false}" ~> List(OnePoiMove(extended = false)))
   }
 
-  test("testing petal computation") {
+  test("testing rotations and petals") {
     // positive ints
     for (i <- 1 to 5) {
-      assert(s"{petals: $i}" ~> List(OnePoiMove(rotations = i-1)))
-    }
-
-    // non-positive ints should fail
-    for (i <- -2 to 0) {
-      assert(s"{petals: $i}".fails())
-    }
-  }
-
-  test("testing rotations") {
-    // nonnegative ints
-    for (i <- 0 to 5) {
       assert(s"{rotations: $i}" ~> List(OnePoiMove(rotations = i)))
+      assert(s"{petals: $i}" ~> List(OnePoiMove(rotations = i)))
     }
 
     // negative ints should fail
+    assert("{petals: -1}".fails())
     assert("{rotations: -1}".fails())
+
+    // zero petals should fail
+    assert("{petals: 0}".fails())
   }
 
   // TODO: avoid petals + rotations in same json
+  // TODO: avoid repeated properties in same json
 
   test("testing spins") {
     assert("{armSpin: cw, handleSpin: none}" ~> List(OnePoiMove(armSpin = CW, handleSpin = NONE)))
-    assert("{arm: ccw, handle: inspin}" ~> List(OnePoiMove(armSpin = CCW, handleSpin = INSPIN)))
-    assert("{arm: cw, handle: anti-spin}" ~> List(OnePoiMove(armSpin = CW, handleSpin = ANTISPIN)))
+    assert("{arm: ccw, handle: inspin, petals: 3}" ~> List(OnePoiMove(armSpin = CCW, handleSpin = INSPIN, rotations = 3)))
+    assert("{arm: cw, handle: anti-spin, petals: 3}" ~> List(OnePoiMove(armSpin = CW, handleSpin = ANTISPIN, rotations = 2)))
     assert("{arm: none, handle: cw}" ~> List(OnePoiMove(armSpin = NONE, handleSpin = CW)))
   }
 

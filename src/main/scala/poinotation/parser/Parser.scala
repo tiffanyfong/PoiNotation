@@ -81,8 +81,8 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
   lazy val move: PackratParser[List[OnePoiMove]] =
     (
       ("(" ~> sequence <~ ")")
-      | (json <~ "}" ^^ { j => List(j)})
-      | failure("expected json or a sequence in parantheses")
+      | (json <~ "}" ^^ { j => List(j.adjustAntispin())})
+      | failure("expected json or a sequence in parentheses")
       )
 
   lazy val json: PackratParser[OnePoiMove] =
@@ -100,7 +100,7 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
       ("extended" ~> ":" ~> bool ^^ { b => ("extended", b)})
       | ("arm(Spin)?".r ~> ":" ~> armSpin ^^ {a => ("armSpin", a)})
       | ("handle(Spin)?".r ~> ":" ~> handleSpin ^^ {h => ("handleSpin", h)})
-      | ("petals" ~> ":" ~> positiveInt ^^ {n => ("rotations", s"${n.toInt-1}")})
+      | ("petals" ~> ":" ~> positiveInt ^^ { n => ("rotations", n) })
       | ("rotations" ~> ":" ~> nonNegativeInt ^^ {n => ("rotations", n)})
       | failure("could not parse one of the properties: spin, direction, # of handle rotations, extended")
       )
