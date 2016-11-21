@@ -57,8 +57,8 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
 
   // parsing interface
   def apply(s: String): ParseResult[List[OnePoiMove]] = {
-    println(s"THE PROGRAM IS: $s\n")
-    println(s"THE RESULT IS: ${parseAll(program, s)}\n")
+    println(s"DEBUG: The program is = $s")
+    println(s"DEBUG: The result is = ${parseAll(program, s)}\n")
     parseAll(program, s)
   }
 
