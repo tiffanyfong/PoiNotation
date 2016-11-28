@@ -1,13 +1,11 @@
 package poinotation
 
-// TODO import stuff
 import java.io.FileNotFoundException
+import net.liftweb.json._
+import net.liftweb.json.JsonDSL._
 import poinotation.ir._
 import poinotation.ir.Spin._
 import poinotation.parser._
-import net.liftweb.json._
-import net.liftweb.json.JsonDSL._
-import scala.tools.nsc.EvalLoop
 
 
 /**
@@ -19,7 +17,7 @@ import scala.tools.nsc.EvalLoop
   */
 object PoiNotation extends App {
 
-  val instructions: String = 
+  val VSInstructions: String = 
 """
 +-------------------------- VisualSpinner3D ---------------------------+
 |                                                                      |
@@ -30,6 +28,17 @@ object PoiNotation extends App {
 | Click on "Import from JSON". Copy and paste the json below (which    |
 | represents your poi moves) into the simulator. Any moves from the    |
 | DSL that cannot be simulated will not appear in the json.            |
+|                                                                      |
++----------------------------------------------------------------------+
+"""
+
+  val PoiInstructions: String = 
+"""
++--------------------- 2D Poi Pattern Visualizer ----------------------+
+|                                                                      |
+| To see your poi moves in this simulator, copy and paste the URLs     |
+| below. Each URL will simulate a single move, except those that are   |
+| currently not supported.                                             |
 |                                                                      |
 +----------------------------------------------------------------------+
 """
@@ -45,8 +54,15 @@ object PoiNotation extends App {
       // if parsing succeeded
       case PoiNotationParser.Success(t, _) =>
         val ir = program.get
-        println(instructions)
+
+        // VisualSpinner3D simulator
+        println(VSInstructions)
         println(toVisualSpinner(ir) + "\n")
+
+        // 2D Poi Pattern Visualizer simulator
+        println(PoiInstructions)
+        to2DPoi(ir).foreach{ println }
+
     }
   }
 
@@ -77,7 +93,7 @@ object PoiNotation extends App {
    */
   def toVSMove(move: OnePoiMove): JValue = move match {
 
-    // Nothing moves
+    // Hold
     case OnePoiMove(false, _, _, 0) => (("recipe" -> "staticspin") ~ ("speed" -> 0))
 
     // Static spin
@@ -97,15 +113,27 @@ object PoiNotation extends App {
   }
 
 
-  // // Converts IR to url string to rfong's 2D poi pattern visualizer
-  // // Only one move can be simulated at a time
-  // def toPoi(moves: List[OnePoiMove]): String = {
-  //   val defaultURL = "https://rfong.github.io/poi/"
-  //   moves.headOption match {
-  //     case None => defaultURL
-  //     case Some(m)
-  //   }
-  // }
+  /**
+   * Converts IR to url string for rfong's 2D poi pattern visualizer
+   * Only one move can be simulated at a time
+   */
+  def to2DPoi(moves: List[OnePoiMove]): List[String] = moves.map(get2DPoiURL(_))
+
+  def get2DPoiURL(move: OnePoiMove): String = move match {
+    // Extension
+    case OnePoiMove(true, arm, handle, 1) if arm == handle => 
+      s"""https://rfong.github.io/poi/#options={}&patterns=["extension","---"]&args=[null,null]\n"""
+
+    // In-Spin Flowers
+    case OnePoiMove(true, _, INSPIN, i) if (3 to 8) contains i => 
+      s"""https://rfong.github.io/poi/#options={}&patterns=["n_petal_inspin","---"]&args=[[$i,45,0],null]\n"""
+
+    // Anti-Spin Flowers
+    case OnePoiMove(true, _, ANTISPIN, i) if (2 to 7) contains i => 
+      s"""https://rfong.github.io/poi/#options={}&patterns=["n_petal_antispin","---"]&args=[[${i+1},45,0]],null]\n"""
+
+    case _ => "CANNOT BE SIMULATED\n"
+  }
 
   /**
     * Given a filename, get the contents of the file
