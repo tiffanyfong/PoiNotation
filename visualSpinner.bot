@@ -1,0 +1,1 @@
+{} ~ {rotations: 1} * 2 ~ {extended: true, rotations: 1} ~ {extended: true, handle: inspin, rotations: 3} ~ {extended: true, handle: antispin, petals: 3} ~ {extended: true, handle: antispin, petals: 4}

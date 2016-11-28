@@ -10,6 +10,8 @@ import scala.util.parsing.combinator._
   * Ideal Grammar
   * -------------
   *
+  *       WILL NOT IMPLEMENT DUE TO LACK OF TIME
+  *
   *       program ::= declarations name
   *       declarations ::= dec declarations  |  dec
   *       dec ::= name "=" move
@@ -57,8 +59,8 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
 
   // parsing interface
   def apply(s: String): ParseResult[List[OnePoiMove]] = {
-    println(s"DEBUG: The program is = $s")
-    println(s"DEBUG: The result is = ${parseAll(program, s)}\n")
+    //println(s"DEBUG: The program is = $s")
+    //println(s"DEBUG: The result is = ${parseAll(program, s)}\n")
     parseAll(program, s)
   }
 
