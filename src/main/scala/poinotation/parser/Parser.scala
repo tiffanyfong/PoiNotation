@@ -51,7 +51,7 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
   """(\s|#.*)+""".r
 
   // regex
-  def positiveInt: Parser[String] = """[1-9]\d*""".r
+ // def positiveInt: Parser[String] = """[1-9]\d*""".r
   def nonNegativeInt: Parser[String] = """\d+""".r
   def bool: Parser[String] = "(true)|(false)".r
   def armSpin: Parser[String] = "(c?cw)|((counter)?clockwise)|(none)".r
@@ -83,7 +83,7 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
   lazy val move: PackratParser[List[OnePoiMove]] =
     (
       ("(" ~> sequence <~ ")")
-      | (json <~ "}" ^^ { j => List(j.adjustAntispin())})
+      | (json <~ "}" ^^ { j => List(j)})
       | failure("expected json or a sequence in parentheses")
       )
 
@@ -102,7 +102,7 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
       ("extended" ~> ":" ~> bool ^^ { b => ("extended", b)})
       | ("arm(Spin)?".r ~> ":" ~> armSpin ^^ {a => ("armSpin", a)})
       | ("handle(Spin)?".r ~> ":" ~> handleSpin ^^ {h => ("handleSpin", h)})
-      | ("petals" ~> ":" ~> positiveInt ^^ { n => ("rotations", n) })
+ //     | ("petals" ~> ":" ~> positiveInt ^^ { n => ("rotations", n) })
       | ("rotations" ~> ":" ~> nonNegativeInt ^^ {n => ("rotations", n)})
       | failure("could not parse one of the properties: spin, direction, # of handle rotations, extended")
       )

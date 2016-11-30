@@ -29,6 +29,8 @@ object PoiNotation extends App {
 | represents your poi moves) into the simulator. Any moves from the    |
 | DSL that cannot be simulated will not appear in the json.            |
 |                                                                      |
+| Note: Moves only go clockwise.                                       |
+|                                                                      |
 +----------------------------------------------------------------------+
 """
 
@@ -40,12 +42,18 @@ object PoiNotation extends App {
 | below. Each URL will simulate a single move, except those that are   |
 | currently not supported.                                             |
 |                                                                      |
+| Note: This simulator's inspin flowers are actually antispin.         |
+|                                                                      |
 +----------------------------------------------------------------------+
 """
 
   for (filepath <- args) {
+    val fileContents = getFileContents(filepath)
+
+    println(s"The inputted syntax is:\n$fileContents")
+
     // parse the choreography file
-    val program = PoiNotationParser(getFileContents(filepath))
+    val program = PoiNotationParser(fileContents)
 
     program match {
       // Error handling: syntax errors
@@ -76,7 +84,7 @@ object PoiNotation extends App {
           "prop": { "azimuth": "NINE" }, "color": "blue", "moves": [] } }""")
 
 
-      val movesArray: JArray = moves.map(toVSMove(_))
+      val movesArray: JArray = moves.map(toVSMove)
 
       // converts JSON to string
       pretty(render(
@@ -90,11 +98,14 @@ object PoiNotation extends App {
 
   /**
    * Converts a OnePoiMove into a VisualSpinner recipe json
+   *
+   * Notes: Moves only go clockwise. Cat-eye is half-extended.
+   *
    */
   def toVSMove(move: OnePoiMove): JValue = move match {
 
     // Hold
-    case OnePoiMove(false, _, _, 0) => (("recipe" -> "staticspin") ~ ("speed" -> 0))
+    case OnePoiMove(false, _, _, 0) => ("recipe" -> "staticspin") ~ ("speed" -> 0) ~ ("name" -> "Hold")
 
     // Static spin
     case OnePoiMove(false, _, _, 1) => ("recipe" -> "staticspin")
@@ -102,12 +113,15 @@ object PoiNotation extends App {
     // Extension
     case OnePoiMove(true, arm, handle, 1) if arm == handle => ("recipe" -> "extension")
 
-    // In-Spin Flowers
-    case OnePoiMove(true, _, INSPIN, i) => (("recipe" -> "inspin") ~ ("name" -> s"$i-Petal In-Spin Flower")) // TODO check
+    // Cat-Eye
+    case OnePoiMove(true, _, ANTISPIN, 1) => ("recipe" -> "cateye")
 
     // Anti-Spin Flowers
-    case OnePoiMove(true, _, ANTISPIN, 2) => (("recipe" -> "triqueta"))
-    case OnePoiMove(true, _, ANTISPIN, i) => (("recipe" -> "antispin") ~ ("name" -> s"${i+1}-Petal Anti-Spin Flower")) // TODO check
+    case OnePoiMove(true, _, ANTISPIN, 2) => ("recipe" -> "triquetra")
+    case OnePoiMove(true, _, ANTISPIN, i) if i > 0 => ("recipe" -> "antispin") ~ ("petals" -> (i+1)) ~ ("name" -> s"${i+1}-Petal Anti-Spin Flower")
+
+    // In-Spin Flowers
+    case OnePoiMove(true, _, INSPIN, i) if i > 0 => ("recipe" -> "flower") ~ ("petals" -> (i-1)) ~ ("name" -> s"${i-1}-Petal In-Spin Flower")
 
     case _ => JNothing
   }
@@ -115,22 +129,23 @@ object PoiNotation extends App {
 
   /**
    * Converts IR to url string for rfong's 2D poi pattern visualizer
-   * Only one move can be simulated at a time
+   *
+   * Notes: Only one move can be simulated at a time. Inspin flowers aren't actually inspin.
    */
-  def to2DPoi(moves: List[OnePoiMove]): List[String] = moves.map(get2DPoiURL(_))
+  def to2DPoi(moves: List[OnePoiMove]): List[String] = moves.map(get2DPoiURL)
 
   def get2DPoiURL(move: OnePoiMove): String = move match {
     // Extension
     case OnePoiMove(true, arm, handle, 1) if arm == handle => 
       s"""https://rfong.github.io/poi/#options={}&patterns=["extension","---"]&args=[null,null]\n"""
 
-    // In-Spin Flowers
-    case OnePoiMove(true, _, INSPIN, i) if (3 to 8) contains i => 
-      s"""https://rfong.github.io/poi/#options={}&patterns=["n_petal_inspin","---"]&args=[[$i,45,0],null]\n"""
+    // "In-Spin" Flowers
+    case OnePoiMove(true, _, INSPIN, i) if (2 to 7) contains i =>
+      s"""https://rfong.github.io/poi/#options={}&patterns=["n_petal_inspin","---"]&args=[[${i+1},45,0],null]\n"""
 
     // Anti-Spin Flowers
     case OnePoiMove(true, _, ANTISPIN, i) if (2 to 7) contains i => 
-      s"""https://rfong.github.io/poi/#options={}&patterns=["n_petal_antispin","---"]&args=[[${i+1},45,0]],null]\n"""
+      s"""https://rfong.github.io/poi/#options={}&patterns=["n_petal_antispin","---"]&args=[[${i+1},45,0],null]\n"""
 
     case _ => "CANNOT BE SIMULATED\n"
   }

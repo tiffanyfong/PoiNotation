@@ -14,6 +14,7 @@ case class OnePoiMove(extended: Boolean = false,   // false = arm is not extende
                       armSpin: Spin = CW,
                       handleSpin: Spin = CW,
                       rotations: Int = 0)   // >= 0. Number of handle rotations per one arm rotation.
+                 //     petals: Int = 0)    // >= 0. Specific to in-spin / anti-spin??
                       //TODO trace: String = "")   // shape of hand trajectory (i.e. circle, square, semicircle...)
   extends Move {
 
@@ -25,11 +26,11 @@ case class OnePoiMove(extended: Boolean = false,   // false = arm is not extende
     case _ => this
   }
 
-  // adjusts antispin rotations
-  def adjustAntispin(): OnePoiMove = this.handleSpin match {
-    case ANTISPIN => this.copy(rotations = this.rotations-1)
-    case _ => this
-  }
+//  // adjusts antispin rotations
+//  def adjustAntispin(): OnePoiMove = this.handleSpin match {
+//    case ANTISPIN => this.copy(rotations = this.rotations-1)
+//    case _ => this
+//  }
 }
 
 object OnePoiMove {
