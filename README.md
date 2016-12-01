@@ -4,13 +4,13 @@ A domain-specific language (DSL) writen in Scala for describing glowsticking/poi
 
 ## DSL Input
 
-Poi Moves are represented by JSONs containing spatial properties for a particular move. Currently, this DSL supports these properties: `extended` (is the arm extended or not), `armSpin` (which direction is the arm moving), `handleSpin` (which direction is the handle/wrist moving), and `rotations` (number of handle rotations per one arm rotation).
+Poi moves are represented by JSONs containing spatial properties for a particular move. Currently, the DSL supports these properties: `extended` (is the arm extended or not), `armSpin` (which direction is the arm moving), `handleSpin` (which direction is the handle/wrist moving), and `rotations` (number of handle rotations per one arm rotation).
 
 Moves can be sequenced to create choreographies. `~` concatenates moves, while `*` repeats a move some number of times. The sample input below describes a sequence of one clockwise extension followed by two 3-petal antispin flowers.
 
 ```
 {extended: true, rotations: 1, armSpin: CW, handleSpin: CW} ~
-{extended: true, rotations 2, armSpin: CCW, handleSpin: ANTISPIN} * 2
+{extended: true, rotations: 2, armSpin: CCW, handleSpin: ANTISPIN} * 2
 ```
 
 ## Install (once)
