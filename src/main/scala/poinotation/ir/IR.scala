@@ -4,6 +4,7 @@ package poinotation.ir
   * Created by tmf on 11/5/16.
   */
 
+import net.liftweb.json._
 import poinotation.ir.Spin._
 
 sealed abstract class Move
@@ -18,6 +19,8 @@ case class OnePoiMove(extended: Boolean = false,   // false = arm is not extende
                       //TODO trace: String = "")   // shape of hand trajectory (i.e. circle, square, semicircle...)
   extends Move {
 
+  implicit val formats = DefaultFormats
+
   def addProperty(property: (String, String)) = property match {
     case ("extended", bool) => this.copy(extended = bool.toBoolean)
     case ("armSpin", spin) => this.copy(armSpin = spin)
@@ -25,6 +28,13 @@ case class OnePoiMove(extended: Boolean = false,   // false = arm is not extende
     case ("rotations", n) => this.copy(rotations = n.toInt)
     case _ => this
   }
+
+  def toJson: JValue = Extraction.decompose(this) transform {
+    case JField("handleSpin", _) => JField("handleSpin", JString(this.handleSpin.name))
+    case JField("armSpin", _) => JField("armSpin", JString(this.armSpin.name))
+  }
+
+  def toJsonString: String = compactRender(this.toJson)
 
 //  // adjusts antispin rotations
 //  def adjustAntispin(): OnePoiMove = this.handleSpin match {

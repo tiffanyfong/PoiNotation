@@ -42,7 +42,8 @@ object PoiNotation extends App {
 | below. Each URL will simulate a single move, except those that are   |
 | currently not supported.                                             |
 |                                                                      |
-| Note: This simulator's inspin flowers are actually antispin.         |
+| Note: This simulator's inspin flowers are actually antispin. Moves   |
+|       only go clockwise.                                             |
 |                                                                      |
 +----------------------------------------------------------------------+
 """
@@ -65,7 +66,7 @@ object PoiNotation extends App {
 
         // VisualSpinner3D simulator
         println(VSInstructions)
-        println(toVisualSpinner(ir) + "\n")
+        printVisualSpinner(ir)
 
         // 2D Poi Pattern Visualizer simulator
         println(PoiInstructions)
@@ -77,23 +78,31 @@ object PoiNotation extends App {
   /**
     * Converts IR to raw json string compatible with VisualSpinner3D (composer version)
     */
-  def toVisualSpinner(moves: List[OnePoiMove]): String = {
-      // defaults from VisualSpinner3D
-      val defaultJson: JValue = 
-        parse("""{"prop1": { "hand": { "radius": 1, "azimuth": "NINE" }, 
-          "prop": { "azimuth": "NINE" }, "color": "blue", "moves": [] } }""")
+  def printVisualSpinner(moves: List[OnePoiMove]): Unit = {
+    // defaults from VisualSpinner3D
+    val defaultJson: JValue =
+      parse("""{"prop1": { "hand": { "radius": 1, "azimuth": "NINE" },
+        "prop": { "azimuth": "NINE" }, "color": "blue", "moves": [] } }""")
 
+    val movesJson: JArray = moves.map(toVSMove)
 
-      val movesArray: JArray = moves.map(toVSMove)
+    // prints JSON converted to string
+    println( pretty(render(
 
-      // converts JSON to string
-      pretty(render(
+      // updates the array of moves
+      defaultJson transform {
+        case JField("moves", _) => JField("moves", movesJson)
+      }
+    )))
 
-        // updates the array of moves
-        defaultJson transform {
-          case JField("moves", _) => JField("moves", movesArray)
-        }
-      ))
+    // Shows moves (unable to be simulated) after the main json
+    val unsupportedMoves: List[String] =
+      (moves zip movesJson.arr).filter(_._2 == JNothing).map(_._1.toJsonString)
+
+    if (unsupportedMoves.nonEmpty) {
+      println(s"NOTICE: The following moves cannot be simulated:\n")
+      unsupportedMoves.foreach{ println }
+    }
   }
 
   /**
@@ -147,7 +156,7 @@ object PoiNotation extends App {
     case OnePoiMove(true, _, ANTISPIN, i) if (2 to 7) contains i => 
       s"""https://rfong.github.io/poi/#options={}&patterns=["n_petal_antispin","---"]&args=[[${i+1},45,0],null]\n"""
 
-    case _ => "CANNOT BE SIMULATED\n"
+    case _ => s"CANNOT BE SIMULATED: ${move.toJsonString}\n"
   }
 
   /**

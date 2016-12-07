@@ -20,13 +20,13 @@ import scala.language.implicitConversions
   * ANTISPIN = spins in opposite direction of arm
   * INSPIN = spins in same direction as arm
   */
-sealed trait Spin
+sealed trait Spin {def name: String }
 object Spin {
-  case object CCW extends Spin { val direction = -1 }
-  case object CW extends Spin { val direction = 1 }
-  case object NONE extends Spin { val direction = 0 } // debating whether to keep this
-  case object ANTISPIN extends Spin { val multiplier = -1 }
-  case object INSPIN extends Spin { val multiplier = 1 }
+  case object CCW extends Spin { val direction = -1; val name = "ccw"}
+  case object CW extends Spin { val direction = 1; val name = "cw" }
+  case object NONE extends Spin { val direction = 0; val name = "none" } // debating whether to keep this
+  case object ANTISPIN extends Spin { val multiplier = -1; val name = "antispin" }
+  case object INSPIN extends Spin { val multiplier = 1; val name = "inspin" }
 
   def opposite(s: Spin): Spin = s match {
     case CCW => CW
