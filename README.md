@@ -1,16 +1,25 @@
 # PoiNotation
 
-A domain-specific language (DSL) writen in Scala for describing glowsticking/poi moves and choreography. See the wiki for a longer description and current progress.
+A domain-specific language (DSL) written in Scala for describing glowsticking/poi moves and choreography. This is an independent project for the DSLs course in Fall 2016. See the wiki for a more detailed [writeup](https://github.com/tiffanyfong/PoiNotation/wiki/Final-writeup) and design process.
 
 ## DSL Input
 
-Poi moves are represented by JSONs containing spatial properties for a particular move. Currently, the DSL supports these properties: `extended` (is the arm extended or not), `armSpin` (which direction is the arm moving), `handleSpin` (which direction is the handle/wrist moving), and `rotations` (number of handle rotations per one arm rotation).
+Poi moves are represented by JSONs containing spatial properties for a particular move. A single poi move spans one circular arm rotation; in other words, it only contains motion for 360 degrees. Currently, the DSL supports these properties described below.
+
+| Property     | Description                                   | Accepted Values                   | Default |
+|--------------|-----------------------------------------------|-----------------------------------|---------|
+| `extended`   | the arm's distance from the body              | `true, false`                     | `false` |
+| `armSpin`    | the arm's rotational direction                | `cw, ccw, none`                   | `cw`    |
+| `handleSpin` | the wrist's/handle's rotation direction       | `cw, ccw, none, inspin, antispin` | `cw`    |
+| `rotations`  | number of handle rotations per 1 arm rotation | any nonnegative integer           | 0       |
+
+Any unspecified property will use the default value. Thus, `{}` is equivalent to `{extended: false, armSpin: cw, handleSpin: cw, rotations: 0}`, which represents a non-moving poi.
 
 Moves can be sequenced to create choreographies. `~` concatenates moves, while `*` repeats a move some number of times. The sample input below describes a sequence of one clockwise extension followed by two 3-petal antispin flowers.
 
 ```
-{extended: true, rotations: 1, armSpin: CW, handleSpin: CW} ~
-{extended: true, rotations: 2, armSpin: CCW, handleSpin: ANTISPIN} * 2
+{extended: true, rotations: 1, armSpin: cw, handleSpin: cw} ~
+{extended: true, rotations: 2, armSpin: ccw, handleSpin: antispin} * 2
 ```
 
 ## Install (once)
