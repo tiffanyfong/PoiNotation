@@ -53,6 +53,6 @@ Try `test.bot` to ensure that the DSL works with sample input.
 
 ## Output
 
-Currently, this DSL will output a json that can be used in the [VisualSpinner3D](https://infiniteperplexity.github.io/visual-spinner-3d/composer.html) simulator. To simulate your poi moves from this DSL, click on "Import from JSON" and copy and paste the resulting json.
+Currently, this DSL will output a json that can be used in the [VisualSpinner3D](http://infiniteperplexity.github.io/visual-spinner-3d/composer.html) simulator. To simulate your poi moves from this DSL, click on "Import from JSON" and copy and paste the resulting json. Note: VisualSpinner3D must be run over "http://", not "https://".
 
 Moves can also be simulated by the [2D Poi Pattern Visualizer](https://rfong.github.io/poi/). The DSL will output a URL containing specific settings for a particular move.

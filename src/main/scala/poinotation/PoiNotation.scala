@@ -15,7 +15,7 @@ object PoiNotation extends App {
 |                                                                      |
 | To see your poi moves in this simulator, go to                       |
 |                                                                      |
-| https://infiniteperplexity.github.io/visual-spinner-3d/composer.html |
+| http://infiniteperplexity.github.io/visual-spinner-3d/composer.html  |
 |                                                                      |
 | Click on "Import from JSON". Copy and paste the json below (which    |
 | represents your poi moves) into the simulator. Any moves from the    |
