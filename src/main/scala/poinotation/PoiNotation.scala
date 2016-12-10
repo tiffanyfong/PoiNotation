@@ -7,14 +7,6 @@ import poinotation.ir._
 import poinotation.ir.Spin._
 import poinotation.parser._
 
-
-/**
-  * Main program
-  *
-  * Usage: sbt "run <filepath>*"
-  *     OR sbt <enter> run <filepath>*
-  * Output: json for visual spinner simulator
-  */
 object PoiNotation extends App {
 
   val VSInstructions: String = 
@@ -48,6 +40,13 @@ object PoiNotation extends App {
 +----------------------------------------------------------------------+
 """
 
+  /**
+    * Main program
+    *
+    * Usage: sbt "run <filepath>*"
+    *     OR sbt <enter> run <filepath>*
+    * Output: JSON for VisualSpinner3D simulator, URLs for 2D Poi Pattern Visualizer
+    */
   for (filepath <- args) {
     val fileContents = getFileContents(filepath)
 
@@ -74,8 +73,11 @@ object PoiNotation extends App {
     }
   }
 
+
+  // HELPER METHODS
+
   /**
-    * Converts IR to raw json string compatible with VisualSpinner3D (composer version)
+    * From the IR, prints raw json string compatible with VisualSpinner3D (composer version)
     */
   def printVisualSpinner(moves: List[OnePoiMove]): Unit = {
     // defaults from VisualSpinner3D
@@ -107,8 +109,7 @@ object PoiNotation extends App {
   /**
    * Converts a OnePoiMove into a VisualSpinner recipe json
    *
-   * Notes: Moves only go clockwise. Cat-eye is half-extended.
-   *
+   * Note: Moves only go clockwise. Cat-eye is half-extended.
    */
   def toVSMove(move: OnePoiMove): JValue = move match {
 
@@ -119,7 +120,7 @@ object PoiNotation extends App {
     case OnePoiMove(false, _, _, 1) => ("recipe" -> "staticspin")
 
     // Extension
-    case OnePoiMove(true, arm, handle, 1) if arm == handle => ("recipe" -> "extension")
+    case OnePoiMove(true, CW, CW, 1) | OnePoiMove(true, CCW, CCW, 1) => ("recipe" -> "extension")
 
     // Cat-Eye
     case OnePoiMove(true, _, ANTISPIN, 1) => ("recipe" -> "cateye")
@@ -136,15 +137,15 @@ object PoiNotation extends App {
 
 
   /**
-   * Converts IR to url string for rfong's 2D poi pattern visualizer
+   * Converts IR to url string for rfong's 2D Poi Pattern Visualizer
    *
-   * Notes: Only one move can be simulated at a time. Inspin flowers aren't actually inspin.
+   * Note: Only one move can be simulated at a time. Inspin flowers aren't actually inspin. Moves only go clockwise.
    */
   def to2DPoi(moves: List[OnePoiMove]): List[String] = moves.map(get2DPoiURL)
 
   def get2DPoiURL(move: OnePoiMove): String = move match {
     // Extension
-    case OnePoiMove(true, arm, handle, 1) if arm == handle => 
+    case OnePoiMove(true, CW, CW, 1) | OnePoiMove(true, CCW, CCW, 1) =>
       s"""https://rfong.github.io/poi/#options={}&patterns=["extension","---"]&args=[null,null]\n"""
 
     // "In-Spin" Flowers

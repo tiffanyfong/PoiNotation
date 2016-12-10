@@ -10,7 +10,10 @@ import scala.util.parsing.combinator._
   * Current Grammar
   * ---------------
   *
+  *   Note: `*` has tighter binding than `~`. Parentheses can change the natural ordering.
+  *
   *       num ∈ 𝒵^* (non-negative integer)
+  *       armSpin, bool, handleSpin ∈ regex
   *
   *       program ::= sequence
   *       sequence ::= sequence "~" duplicateMove  |  duplicateMove
@@ -24,9 +27,6 @@ import scala.util.parsing.combinator._
   *         |  ("arm" | "armSpin") ":" armSpin
   *         |  ("handle" | "handleSpin") ":" handleSpin
   *         |  "rotations" ":" num
-  *
-  *       REGEX
-  *       armSpin, bool, handleSpin
   *
   */
 
@@ -72,12 +72,14 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
       | failure("expected json or a sequence in parentheses")
       )
 
+  // JSONs are parsed from scratch to ensure valid properties
+  // properties are parsed from left-to-right
   lazy val json: PackratParser[OnePoiMove] =
     (
       (json ~ "," ~ property ^^ { case j ~ "," ~ p => j.addProperty(p) })
       | ("{" ~> property ^^ { p => defaultMove.addProperty(p) })
       | ("{" ^^^ defaultMove)
-      | failure("failed to parse json")
+      | failure("failed to parse json structure")
       )
 
   // key-value pair where the key corresponds to the property in the IR case class,
@@ -89,6 +91,6 @@ object PoiNotationParser extends RegexParsers with PackratParsers {
       | ("handle(Spin)?".r ~> ":" ~> handleSpin ^^ {h => ("handleSpin", h)})
  //     | ("petals" ~> ":" ~> positiveInt ^^ { n => ("rotations", n) })
       | ("rotations" ~> ":" ~> nonNegativeInt ^^ {n => ("rotations", n)})
-      | failure("could not parse one of the properties: spin, direction, # of handle rotations, extended")
+      | failure("could not parse one of the properties: extended, armSpin, handleSpin, rotations")
       )
 }

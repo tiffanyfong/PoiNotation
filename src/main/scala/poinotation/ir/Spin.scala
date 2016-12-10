@@ -28,13 +28,6 @@ object Spin {
   case object ANTISPIN extends Spin { val multiplier = -1; val name = "antispin" }
   case object INSPIN extends Spin { val multiplier = 1; val name = "inspin" }
 
-  def opposite(s: Spin): Spin = s match {
-    case CCW => CW
-    case CW => CCW
-    case NONE => NONE
-    case _ => s
-  }
-
   implicit def string2Spin(s: String): Spin = s.toLowerCase match {
     case "ccw" | "counterclockwise" => CCW
     case "cw" | "clockwise" => CW

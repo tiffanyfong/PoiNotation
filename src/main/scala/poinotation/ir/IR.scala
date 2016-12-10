@@ -9,8 +9,11 @@ import poinotation.ir.Spin._
 
 sealed abstract class Move
 
-// move with one arm rotation and a single poi
-// the default is a "still" move. The poi is at the center of mass and doesn't move.
+/**
+  *  OnePoiMove: a single-poi move consisting of one 360-degree arm rotation
+  *
+  *  Note: The default is an unextended, non-moving poi.
+  */
 case class OnePoiMove(extended: Boolean = false,   // false = arm is not extended, true = arm extended outwards
                       armSpin: Spin = CW,
                       handleSpin: Spin = CW,
@@ -21,7 +24,7 @@ case class OnePoiMove(extended: Boolean = false,   // false = arm is not extende
 
   implicit val formats = DefaultFormats
 
-  def addProperty(property: (String, String)) = property match {
+  def addProperty(property: (String, String)): OnePoiMove = property match {
     case ("extended", bool) => this.copy(extended = bool.toBoolean)
     case ("armSpin", spin) => this.copy(armSpin = spin)
     case ("handleSpin", spin) => this.copy(handleSpin = spin)
