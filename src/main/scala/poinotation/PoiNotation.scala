@@ -61,8 +61,7 @@ object PoiNotation extends App {
       case e: PoiNotationParser.NoSuccess  => println(e)
 
       // if parsing succeeded
-      case PoiNotationParser.Success(t, _) =>
-        val ir = program.get
+      case PoiNotationParser.Success(ir, _) =>
 
         // VisualSpinner3D simulator
         println(VSInstructions)

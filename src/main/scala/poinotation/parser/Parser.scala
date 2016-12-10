@@ -6,25 +6,11 @@ import scala.language.postfixOps
 import scala.util.parsing.combinator._
 
 /**
-  * -------------
-  * Ideal Grammar
-  * -------------
-  *
-  *       WILL NOT IMPLEMENT DUE TO LACK OF TIME
-  *
-  *       program ::= declarations name
-  *       declarations ::= dec declarations  |  dec
-  *       dec ::= name "=" move
-  *
-  *       name ::= sequence
-  *
-  *       // and everything else in the current grammar
-  *
   * ---------------
   * Current Grammar
   * ---------------
   *
-  *       num ∈ 𝒵 (non-negative integer)
+  *       num ∈ 𝒵^* (non-negative integer)
   *
   *       program ::= sequence
   *       sequence ::= sequence "~" duplicateMove  |  duplicateMove
@@ -37,11 +23,10 @@ import scala.util.parsing.combinator._
   *         "extended" ":" bool
   *         |  ("arm" | "armSpin") ":" armSpin
   *         |  ("handle" | "handleSpin") ":" handleSpin
-  *         |  "petals" ":" positiveInt
-  *         |  "rotations" ":" nonNegativeInt
+  *         |  "rotations" ":" num
   *
   *       REGEX
-  *       armSpin, bool, handleSpin, nonNegativeInt, positiveInt
+  *       armSpin, bool, handleSpin
   *
   */
 

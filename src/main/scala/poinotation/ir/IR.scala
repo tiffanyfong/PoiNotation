@@ -16,7 +16,7 @@ case class OnePoiMove(extended: Boolean = false,   // false = arm is not extende
                       handleSpin: Spin = CW,
                       rotations: Int = 0)   // >= 0. Number of handle rotations per one arm rotation.
                  //     petals: Int = 0)    // >= 0. Specific to in-spin / anti-spin??
-                      //TODO trace: String = "")   // shape of hand trajectory (i.e. circle, square, semicircle...)
+
   extends Move {
 
   implicit val formats = DefaultFormats
@@ -35,20 +35,13 @@ case class OnePoiMove(extended: Boolean = false,   // false = arm is not extende
   }
 
   def toJsonString: String = compactRender(this.toJson)
-
-//  // adjusts antispin rotations
-//  def adjustAntispin(): OnePoiMove = this.handleSpin match {
-//    case ANTISPIN => this.copy(rotations = this.rotations-1)
-//    case _ => this
-//  }
 }
 
 object OnePoiMove {
   def defaultMove: OnePoiMove = OnePoiMove()
 }
 
-// WHERE TO ADD PHASE
-
+// TODO: currently unused. Future work
 // move with one arm rotation and two pois moving simultaneously
 case class TwoPoiMove(leftPoi: OnePoiMove, leftPhase: Int, rightPoi: OnePoiMove, rightPhase: Int) extends Move
 

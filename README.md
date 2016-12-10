@@ -4,7 +4,7 @@ A domain-specific language (DSL) written in Scala for describing glowsticking/po
 
 ## DSL Input
 
-Poi moves are represented by JSONs containing spatial properties for a particular move. A single poi move spans one circular arm rotation; in other words, it only contains motion for 360 degrees. Currently, the DSL supports these properties described below.
+Poi moves are represented by JSONs containing spatial properties for a particular move. A single poi move spans one circular arm rotation; in other words, it only contains motion for 360 degrees. Currently, PoiNotation supports these properties described below.
 
 | Property     | Description                                   | Accepted Values                   | Default |
 |--------------|-----------------------------------------------|-----------------------------------|---------|
