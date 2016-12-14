@@ -1,12 +1,12 @@
 # PoiNotation
 
-# Why?
+## Why?
 
 Describing poi is hard.
 
-# Language
+## Language
 
-## Syntax (Demo)
+### Syntax (Demo)
 
 ```
 {extended: true, rotations: 1} ~
@@ -16,21 +16,17 @@ Describing poi is hard.
 # extension, 2 * (2-petal inspin flower), triquetra, 4-petal antispin flower
 ```
 
-## IR
+### IR
 
 ```scala
 case class OnePoiMove(extended: Boolean = false, armSpin: Spin = CW, handleSpin: Spin = CW, rotations: Int = 0)
 ```
 
-Default values -> non-moving poi
-
-`Spin` is an enum
-
-## Semantics
+### Semantics
 
 IR -> Simulators
 
-# Insights
+## Insights
 
 1. Internal vs. External
 2. So many features, so little time
